@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cafeteria Live Lunch Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue&display=swap" rel="stylesheet">
+  <style>
+    #left-panel {
+      width: 60px;
+      background: #ffffff;
+      border-right: 3px solid #ccc;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+      padding: 1rem 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: width 0.3s ease;
+    }
+    #left-panel.collapsed {
+      width: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    .sound-toggle {
+      background: #115091;
+      color: #fcdb04;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+    #soundboard h2 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    body {
+      font-family: 'Comic Neue', cursive;
+      background-color: #f0f4f8;
+      display: flex;
+    }
+    main {
+      flex: 3;
+      text-align: center;
+      padding: 2rem;
+    }
+    aside {
+      flex: 1;
+      padding: 2rem;
+      background: #ffffff;
+      border-left: 3px solid #ccc;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.05);
+      transition: background 0.3s, border 0.3s;
+    }
+    aside.silent-highlight {
+      background: #fff3cd;
+      border-left: 5px solid red;
+    }
+    .matrix-toggle {
+      background: #115091;
+      color: #fcdb04;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+    .matrix-section {
+      display: none;
+    }
+    .matrix-section.show {
+      display: block;
+    }
+    .matrix-item {
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      text-align: left;
+    }
+    .matrix-item strong {
+      display: inline-block;
+      width: 2rem;
+    }
+    .school-banner {
+      background: #115091;
+      color: #fcdb04;
+      padding: 1rem;
+      font-size: 2rem;
+      text-align: center;
+      font-weight: bold;
+    }
+    .school-banner .mascot {
+      font-size: 2.5rem;
+      margin-right: 0.5rem;
+    }
+    #soundboard {
+      margin-top: 1.5rem;
+    }
+    .sound-btn {
+      margin: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      background: #fcdb04;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+      .class-box {
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 300px;
+      box-sizing: border-box;
+      text-align: left;
+      box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
+      position: relative;
+      transition: background 0.5s ease;
+      margin: 1rem auto;
+    }
+    .class-box.inactive {
+      background-color: white !important;
+      color: #888;
+    }
+    .green-bg { background-color: #d1fae5; }
+    .yellow-bg { background-color: #fef9c3; }
+    .red-bg { background-color: #fee2e2; }
+    .status {
+      font-weight: bold;
+      font-size: 1.3rem;
+      margin-top: 1rem;
+    }
+    .progress-bar {
+      height: 20px;
+      background: #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #3b82f6;
+      width: 0%;
+      transition: width 1s linear;
+    }
+    .behavior-buttons {
+      margin-top: 1rem;
+    }
+    .behavior-btn {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin: 0 5px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    .green { background: #22c55e; }
+    .yellow { background: #eab308; }
+    .red { background: #ef4444; }
+    .selected { border-color: #000; }
+    .badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #fcdb04;
+      color: #000;
+      padding: 0.3rem 0.5rem;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+</style>
+</head>
+<body>
+  <div id="left-panel">
+    <button class="sound-toggle" onclick="toggleSoundboard()">🔊</button>
+    <div id="soundboard">
+      <h2>Sounds</h2>
+      <button class="sound-btn" onclick="playSound('shhh')">🤫</button>
+      <button class="sound-btn" onclick="playSound('clap')">👏</button>
+      <button class="sound-btn" onclick="playSound('doorbell')">🔔</button>
+    </div>
+  </div>
+  <main>
+    <div class="school-banner">
+  <span class="mascot">🐎</span> MES Mustangs<br>
+  <span style="font-size: 1rem; font-weight: normal; color: #fcdb04; display: block; margin-top: 0.3rem;">
+    PBIS: Behave responsibly, Expect to Learn, Stay Safe, Treat others with Kindness and Respect
+  </span>
+</div>
+    <h1>Cafeteria Tracker</h1>
+    <div id="clock">--:--:--</div>
+    <div id="silent-controls">
+      <button class="silent-btn" onclick="triggerSilentLunch(60)">🔇 1 Min Silent Lunch</button>
+      <button class="silent-btn" onclick="triggerSilentLunch(120)">🔇 2 Min Silent Lunch</button>
+      <button class="silent-btn" onclick="triggerSilentLunch(300)">🔇 5 Min Silent Lunch</button>
+    </div>
+    <div id="silent-message">🤫 Silent Lunch – <span id="silent-timer">60</span> seconds remaining...</div>
+    <div id="classes"></div>
+
+    <div id="soundboard">
+      <h2>🔊 Soundboard</h2>
+      <button class="sound-btn" onclick="playSound('shhh')">🤫 Shhh</button>
+      <button class="sound-btn" onclick="playSound('clap')">👏 Clap</button>
+      <button class="sound-btn" onclick="playSound('doorbell')">🔔 Doorbell</button>
+    </div>
+
+    <audio id="shhh-sound" src="https://www.soundjay.com/human/shush-01.mp3" preload="auto"></audio>
+    <audio id="clap-sound" src="https://www.soundjay.com/human/applause-8.mp3" preload="auto"></audio>
+    <audio id="doorbell-sound" src="https://www.soundjay.com/button/button-3.mp3" preload="auto"></audio>
+  </main>
+
+  
+
+  <script>
+    function toggleSoundboard() {
+      const panel = document.getElementById('left-panel');
+      panel.classList.toggle('collapsed');
+    }
+    function toggleMatrix() {
+      document.getElementById('matrix-section').classList.toggle('show');
+    }
+
+    function playSound(type) {
+      const audioMap = {
+        shhh: document.getElementById('shhh-sound'),
+        clap: document.getElementById('clap-sound'),
+        doorbell: document.getElementById('doorbell-sound')
+      };
+      if (audioMap[type]) {
+        audioMap[type].currentTime = 0;
+        audioMap[type].play();
+      }
+    }
+  // === CAFETERIA TRACKER SCRIPT ===
+
+const behaviorStatus = {};
+const classStreaks = {};
+const notifiedLineups = {};
+
+function getCurrentTime() {
+  return new Date();
+}
+
+function triggerSilentLunch(seconds) {
+  clearTimeout(window.silentTimeout);
+  clearInterval(window.silentInterval);
+  document.getElementById('silent-message').style.display = 'block';
+  document.getElementById('silent-timer').textContent = seconds;
+  document.getElementById('shhh-sound').play();
+  document.querySelector('aside').classList.add('silent-highlight');
+  let remaining = seconds;
+  window.silentInterval = setInterval(() => {
+    remaining--;
+    document.getElementById('silent-timer').textContent = remaining;
+    if (remaining <= 0) {
+      clearInterval(window.silentInterval);
+      document.getElementById('silent-message').style.display = 'none';
+      document.querySelector('aside').classList.remove('silent-highlight');
+    }
+  }, 1000);
+}
+
+function setBehavior(name, color) {
+  if (!classStreaks[name]) {
+    classStreaks[name] = { streak: 0, changed: false };
+  }
+  if (color !== 'green') {
+    classStreaks[name].changed = true;
+  }
+  behaviorStatus[name] = color;
+  updateClock();
+}
+
+const lunchSchedule = [
+  { name: "Ms. Reece", start: "10:05", end: "10:35", table: "Table 1" },
+  { name: "Ms. Governale", start: "10:08", end: "10:38", table: "Table 2" },
+  { name: "Ms. Gramby", start: "10:11", end: "10:41", table: "Table 3" },
+  { name: "Ms. Jones", start: "10:14", end: "10:44", table: "Table 4" },
+  { name: "Ms. Brock", start: "10:17", end: "10:47", table: "Table 5" },
+  { name: "Ms. Mayer", start: "10:20", end: "10:50", table: "Table 6" },
+  { name: "Ms. Smith-PreK", start: "10:23", end: "10:53", table: "Pre K Table" },
+  { name: "Ms. Barisaac", start: "10:35", end: "11:05", table: "Table 1" },
+  { name: "Ms. Kitchens", start: "10:38", end: "11:08", table: "Table 2" },
+  { name: "Ms. Calheiros", start: "10:41", end: "11:11", table: "Table 3" },
+  { name: "Ms. Short", start: "10:44", end: "11:14", table: "Table 4" },
+  { name: "Ms. Williams", start: "10:47", end: "11:17", table: "Table 5" },
+  { name: "Ms. Dane-PreK", start: "10:53", end: "11:23", table: "Pre K Table" },
+  { name: "Ms. Carter", start: "11:05", end: "11:35", table: "Table 1" },
+  { name: "Ms. Brown", start: "11:08", end: "11:38", table: "Table 2" },
+  { name: "Ms. Nichelson", start: "11:11", end: "11:41", table: "Table 3" },
+  { name: "Ms. Pilger", start: "11:14", end: "11:44", table: "Table 4" },
+  { name: "Ms. Abramowitz", start: "11:17", end: "11:47", table: "Table 5" },
+  { name: "Mr. Cordy", start: "11:32", end: "12:02", table: "Table 6" },
+  { name: "Ms. DeYonker", start: "11:35", end: "12:05", table: "Table 1" },
+  { name: "Ms. Pitts", start: "11:38", end: "12:08", table: "Table 2" },
+  { name: "Ms. St. Hill-Des Anges", start: "11:41", end: "12:11", table: "Table 3" },
+  { name: "Ms. Riley", start: "11:44", end: "12:44", table: "Table 4" },
+  { name: "Ms. Hussain", start: "11:58", end: "12:28", table: "Table 5" },
+  { name: "Ms. McCrery", start: "12:02", end: "12:32", table: "Table 6" },
+  { name: "Ms. Sakha", start: "12:05", end: "12:35", table: "Table 1" },
+  { name: "Ms. Hudson", start: "12:08", end: "12:38", table: "Table 2" },
+  { name: "Mr. Bemiss", start: "12:11", end: "12:41", table: "Table 3" },
+  { name: "Ms. Johnson", start: "12:14", end: "12:44", table: "Table 4" }
+]; // Full list of teachers goes here
+
+function parseTime(timeStr) {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+}
+
+function updateClock() {
+  const now = getCurrentTime();
+  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  document.getElementById('clock').textContent = timeStr;
+  const classContainer = document.getElementById('classes');
+  classContainer.innerHTML = '';
+
+  const activeClasses = [];
+  const inactiveClasses = [];
+
+  lunchSchedule.forEach(currentClass => {
+    const start = parseTime(currentClass.start);
+    const end = parseTime(currentClass.end);
+    const lineUp = new Date(end.getTime() - 3 * 60000);
+    const isActive = now >= start && now <= end;
+
+    if (!classStreaks[currentClass.name]) {
+      classStreaks[currentClass.name] = { streak: 0, changed: false };
+    }
+
+    if (isActive) {
+      activeClasses.push({ ...currentClass, start, end, lineUp });
+    } else {
+      inactiveClasses.push({ ...currentClass });
+    }
+  });
+
+  const sortedClasses = [...activeClasses, ...inactiveClasses];
+
+  sortedClasses.forEach(currentClass => {
+    const isActive = !!currentClass.start;
+    const behavior = behaviorStatus[currentClass.name] || 'green';
+    const box = document.createElement('div');
+    box.className = `class-box ${isActive ? behavior + '-bg' : 'inactive'}`;
+
+    let statusText = 'Not in cafeteria';
+    let showButtons = '';
+    let progressHTML = '';
+    let badge = '';
+    const streak = classStreaks[currentClass.name]?.streak || 0;
+
+    if ([5, 10, 15, 20, 25, 30].includes(streak)) {
+      badge = `<div class="badge">🏅 ${streak} Days!</div>`;
+    }
+
+    if (isActive) {
+      const { start, end, lineUp } = currentClass;
+      const progress = Math.min(100, Math.max(0, ((now - start) / (lineUp - start)) * 100));
+      statusText = now >= lineUp ? '🚶 Line Up!' : `⏳ Line up in ${Math.ceil((lineUp - now) / 60000)} min`;
+
+      if (now >= lineUp && !notifiedLineups[currentClass.name]) {
+        playSound('doorbell');
+        notifiedLineups[currentClass.name] = true;
+      }
+
+      progressHTML = `<div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>`;
+      showButtons = `
+        <div class="behavior-buttons">
+          <div class="behavior-btn green ${behavior === 'green' ? 'selected' : ''}" onclick="setBehavior('${currentClass.name}', 'green')"></div>
+          <div class="behavior-btn yellow ${behavior === 'yellow' ? 'selected' : ''}" onclick="setBehavior('${currentClass.name}', 'yellow')"></div>
+          <div class="behavior-btn red ${behavior === 'red' ? 'selected' : ''}" onclick="setBehavior('${currentClass.name}', 'red')"></div>
+        </div>
+      `;
+    }
+
+    box.innerHTML = `
+      ${badge}
+      <h3>${currentClass.name}</h3>
+      <p><strong>Lunch:</strong> ${currentClass.start || ''} – ${currentClass.end || ''}</p>
+      <p><strong>Table:</strong> ${currentClass.table}</p>
+      <p class="status">${statusText}</p>
+      ${progressHTML}
+      ${showButtons}
+      <p><strong>Green Streak:</strong> ${streak} day(s)</p>
+    `;
+    classContainer.appendChild(box);
+  });
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+</body>
+</html>
