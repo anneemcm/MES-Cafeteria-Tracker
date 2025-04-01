@@ -6,8 +6,8 @@
   <style>
     /* School colors & banner */
     .school-banner {
-      background: #115091; /* Mustang Blue */
-      color: #fcdb04;      /* Mustang Gold */
+      background: #115091;
+      color: #fcdb04;
       padding: 1rem;
       font-size: 2rem;
       text-align: center;
@@ -159,6 +159,138 @@
   </style>
 </head>
 <body>
-<!-- Page content would continue here... -->
+  <main>
+    <div class="school-banner">
+      <span class="mascot">🐎</span> MES Mustangs
+    </div>
+    <h1>Cafeteria Tracker</h1>
+    <div id="clock">--:--:--</div>
+    <div id="silent-controls">
+      <button class="silent-btn" onclick="triggerSilentLunch(60)">🔇 1 Min Silent Lunch</button>
+      <button class="silent-btn" onclick="triggerSilentLunch(120)">🔇 2 Min Silent Lunch</button>
+      <button class="silent-btn" onclick="triggerSilentLunch(300)">🔇 5 Min Silent Lunch</button>
+    </div>
+    <div id="silent-message">🤫 Silent Lunch – <span id="silent-timer">60</span> seconds remaining...</div>
+    <div id="classes"></div>
+    <audio id="shush-sound" src="https://www.soundjay.com/button/sounds/button-16.mp3" preload="auto"></audio>
+  </main>
+  <aside>
+    <h2>PBIS Matrix</h2>
+    <div class="matrix-item"><strong>B</strong> - Behave responsibly</div>
+    <div class="matrix-item"><strong>E</strong> - Expect to Learn</div>
+    <div class="matrix-item"><strong>S</strong> - Stay Safe</div>
+    <div class="matrix-item"><strong>T</strong> - Treat others with Kindness and Respect</div>
+  </aside>
+
+  <script>
+    const SIMULATE_TIME = true;
+    const SIMULATED_TIME = "10:48";
+
+    const behaviorStatus = {};
+    const classStreaks = {};
+
+    function getCurrentTime() {
+      if (!SIMULATE_TIME) return new Date();
+      const [h, m] = SIMULATED_TIME.split(":" ).map(Number);
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, now.getSeconds());
+    }
+
+    function triggerSilentLunch(seconds) {
+      clearTimeout(window.silentTimeout);
+      clearInterval(window.silentInterval);
+      document.getElementById('silent-message').style.display = 'block';
+      document.getElementById('silent-timer').textContent = seconds;
+      document.getElementById('shush-sound').play();
+      document.querySelector('aside').classList.add('silent-highlight');
+      let remaining = seconds;
+      window.silentInterval = setInterval(() => {
+        remaining--;
+        document.getElementById('silent-timer').textContent = remaining;
+        if (remaining <= 0) {
+          clearInterval(window.silentInterval);
+          document.getElementById('silent-message').style.display = 'none';
+          document.querySelector('aside').classList.remove('silent-highlight');
+        }
+      }, 1000);
+    }
+
+    function setBehavior(name, color) {
+      if (!classStreaks[name]) {
+        classStreaks[name] = { streak: 0, changed: false };
+      }
+      if (color !== 'green') {
+        classStreaks[name].changed = true;
+      }
+      behaviorStatus[name] = color;
+      updateClock();
+    }
+
+    const lunchSchedule = [
+      { name: "Ms. Reece", start: "10:05", end: "10:35", table: "Table 1" },
+      { name: "Ms. Governale", start: "10:08", end: "10:38", table: "Table 2" },
+      { name: "Ms. Gramby", start: "10:11", end: "10:41", table: "Table 3" },
+      { name: "Ms. Jones", start: "10:14", end: "10:44", table: "Table 4" },
+      { name: "Ms. Brock", start: "10:17", end: "10:47", table: "Table 5" },
+      { name: "Ms. Mayer", start: "10:20", end: "10:50", table: "Table 6" }
+    ];
+
+    function updateClock() {
+      const now = getCurrentTime();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('clock').textContent = timeStr;
+      const classContainer = document.getElementById('classes');
+      classContainer.innerHTML = '';
+
+      lunchSchedule.forEach(currentClass => {
+        const start = parseTime(currentClass.start);
+        const end = parseTime(currentClass.end);
+        const lineUp = new Date(end.getTime() - 3 * 60000);
+        const isActive = now >= start && now <= end;
+
+        if (!classStreaks[currentClass.name]) {
+          classStreaks[currentClass.name] = { streak: 0, changed: false };
+        }
+
+        const streak = classStreaks[currentClass.name].streak;
+        let badge = '';
+        if ([5, 10, 15, 20, 25, 30].includes(streak)) {
+          badge = `<div class="badge">🏅 ${streak} Days!</div>`;
+        }
+
+        const box = document.createElement('div');
+        box.className = `class-box ${isActive ? (behaviorStatus[currentClass.name] || 'green') + '-bg' : 'inactive'}`;
+
+        box.innerHTML = `
+          ${badge}
+          <h3>${currentClass.name}</h3>
+          <p><strong>Lunch:</strong> ${currentClass.start} – ${currentClass.end}</p>
+          <p><strong>Table:</strong> ${currentClass.table}</p>
+          <p class="status">${isActive ? 'In Cafeteria' : 'Not in cafeteria'}</p>
+          ${isActive ? `
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+          <div class="behavior-buttons">
+            <div class="behavior-btn green" onclick="setBehavior('${currentClass.name}', 'green')"></div>
+            <div class="behavior-btn yellow" onclick="setBehavior('${currentClass.name}', 'yellow')"></div>
+            <div class="behavior-btn red" onclick="setBehavior('${currentClass.name}', 'red')"></div>
+          </div>
+          ` : ''}
+          <p><strong>Green Streak:</strong> ${streak} day(s)</p>
+        `;
+
+        classContainer.appendChild(box);
+      });
+    }
+
+    function parseTime(timeStr) {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
 </body>
 </html>
+
