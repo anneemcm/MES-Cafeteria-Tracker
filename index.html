@@ -183,7 +183,7 @@
   </aside>
 
   <script>
-    const SIMULATE_TIME = true;
+    const SIMULATE_TIME = false;
     const SIMULATED_TIME = "10:48";
 
     const behaviorStatus = {};
@@ -227,13 +227,36 @@
     }
 
     const lunchSchedule = [
-      { name: "Ms. Reece", start: "10:05", end: "10:35", table: "Table 1" },
-      { name: "Ms. Governale", start: "10:08", end: "10:38", table: "Table 2" },
-      { name: "Ms. Gramby", start: "10:11", end: "10:41", table: "Table 3" },
-      { name: "Ms. Jones", start: "10:14", end: "10:44", table: "Table 4" },
-      { name: "Ms. Brock", start: "10:17", end: "10:47", table: "Table 5" },
-      { name: "Ms. Mayer", start: "10:20", end: "10:50", table: "Table 6" }
-    ];
+  { name: "Ms. Reece", start: "10:05", end: "10:35", table: "Table 1" },
+  { name: "Ms. Governale", start: "10:08", end: "10:38", table: "Table 2" },
+  { name: "Ms. Gramby", start: "10:11", end: "10:41", table: "Table 3" },
+  { name: "Ms. Jones", start: "10:14", end: "10:44", table: "Table 4" },
+  { name: "Ms. Brock", start: "10:17", end: "10:47", table: "Table 5" },
+  { name: "Ms. Mayer", start: "10:20", end: "10:50", table: "Table 6" },
+  { name: "Ms. Smith-PreK", start: "10:23", end: "10:53", table: "Pre K Table" },
+  { name: "Ms. Barisaac", start: "10:35", end: "11:05", table: "Table 1" },
+  { name: "Ms. Kitchens", start: "10:38", end: "11:08", table: "Table 2" },
+  { name: "Ms. Calheiros", start: "10:41", end: "11:11", table: "Table 3" },
+  { name: "Ms. Short", start: "10:44", end: "11:14", table: "Table 4" },
+  { name: "Ms. Williams", start: "10:47", end: "11:17", table: "Table 5" },
+  { name: "Ms. Dane-PreK", start: "10:53", end: "11:23", table: "Pre K Table" },
+  { name: "Ms. Carter", start: "11:05", end: "11:35", table: "Table 1" },
+  { name: "Ms. Brown", start: "11:08", end: "11:38", table: "Table 2" },
+  { name: "Ms. Nichelson", start: "11:11", end: "11:41", table: "Table 3" },
+  { name: "Ms. Pilger", start: "11:14", end: "11:44", table: "Table 4" },
+  { name: "Ms. Abramowitz", start: "11:17", end: "11:47", table: "Table 5" },
+  { name: "Mr. Cordy", start: "11:32", end: "12:02", table: "Table 6" },
+  { name: "Ms. DeYonker", start: "11:35", end: "12:05", table: "Table 1" },
+  { name: "Ms. Pitts", start: "11:38", end: "12:08", table: "Table 2" },
+  { name: "Ms. St. Hill-Des Anges", start: "11:41", end: "12:11", table: "Table 3" },
+  { name: "Ms. Riley", start: "11:44", end: "12:44", table: "Table 4" },
+  { name: "Ms. Hussain", start: "11:58", end: "12:28", table: "Table 5" },
+  { name: "Ms. McCrery", start: "12:02", end: "12:32", table: "Table 6" },
+  { name: "Ms. Sakha", start: "12:05", end: "12:35", table: "Table 1" },
+  { name: "Ms. Hudson", start: "12:08", end: "12:38", table: "Table 2" },
+  { name: "Mr. Bemiss", start: "12:11", end: "12:41", table: "Table 3" },
+  { name: "Ms. Johnson", start: "12:14", end: "12:44", table: "Table 4" }
+];
 
     function updateClock() {
       const now = getCurrentTime();
@@ -241,6 +264,23 @@
       document.getElementById('clock').textContent = timeStr;
       const classContainer = document.getElementById('classes');
       classContainer.innerHTML = '';
+
+      const activeClasses = [];
+      const inactiveClasses = [];
+
+      lunchSchedule.forEach(currentClass => {
+        const start = parseTime(currentClass.start);
+        const end = parseTime(currentClass.end);
+        const isActive = now >= start && now <= end;
+
+        if (isActive) {
+          activeClasses.push(currentClass);
+        } else {
+          inactiveClasses.push(currentClass);
+        }
+      });
+
+      const sortedClasses = activeClasses.concat(inactiveClasses);
 
       lunchSchedule.forEach(currentClass => {
         const start = parseTime(currentClass.start);
