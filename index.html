@@ -4,6 +4,19 @@
   <meta charset="UTF-8">
   <title>Cafeteria Live Lunch Tracker</title>
   <style>
+    /* School colors & banner */
+    .school-banner {
+      background: #115091; /* Mustang Blue */
+      color: #fcdb04;      /* Mustang Gold */
+      padding: 1rem;
+      font-size: 2rem;
+      text-align: center;
+      font-weight: bold;
+    }
+    .school-banner .mascot {
+      font-size: 2.5rem;
+      margin-right: 0.5rem;
+    }
     body {
       font-family: sans-serif;
       background-color: #f0f4f8;
@@ -68,15 +81,19 @@
       box-sizing: border-box;
       text-align: left;
       box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
-      background: #d1fae5;
       position: relative;
+      transition: background 0.5s ease;
+    }
+    .class-box.inactive {
+      background-color: white !important;
+      color: #888;
     }
     .badge {
       position: absolute;
       top: 10px;
       right: 10px;
-      background: gold;
-      color: black;
+      background: #fcdb04;
+      color: #000;
       padding: 0.3rem 0.5rem;
       border-radius: 5px;
       font-weight: bold;
@@ -103,18 +120,10 @@
       width: 0%;
       transition: width 1s linear;
     }
-    .lineup {
-      color: #d97706;
-    }
-    .upcoming {
-      color: #2563eb;
-    }
-    .over {
-      color: #b91c1c;
-    }
-    .behavior-buttons {
-      margin-top: 1rem;
-    }
+    .lineup { color: #d97706; }
+    .upcoming { color: #2563eb; }
+    .over { color: #b91c1c; }
+    .behavior-buttons { margin-top: 1rem; }
     .behavior-btn {
       display: inline-block;
       width: 40px;
@@ -128,14 +137,12 @@
     .yellow { background: #eab308; }
     .red { background: #ef4444; }
     .selected { border-color: #000; }
-    #silent-controls {
-      margin-top: 1rem;
-    }
+    #silent-controls { margin-top: 1rem; }
     .silent-btn {
       margin: 0 0.5rem;
       padding: 0.5rem 1rem;
       font-size: 1.2rem;
-      background: #facc15;
+      background: #fcdb04;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -150,51 +157,4 @@
       width: 2rem;
     }
   </style>
-  <script>
-    function triggerSilentLunch(seconds) {
-      clearTimeout(window.silentTimeout);
-      clearInterval(window.silentInterval);
 
-      document.getElementById('silent-message').style.display = 'block';
-      document.getElementById('silent-timer').textContent = seconds;
-      document.getElementById('shush-sound').play();
-      document.querySelector('aside').classList.add('silent-highlight');
-
-      let remaining = seconds;
-      window.silentInterval = setInterval(() => {
-        remaining--;
-        document.getElementById('silent-timer').textContent = remaining;
-        if (remaining <= 0) {
-          clearInterval(window.silentInterval);
-          document.getElementById('silent-message').style.display = 'none';
-          document.querySelector('aside').classList.remove('silent-highlight');
-        }
-      }, 1000);
-    }
-  </script>
-</head>
-<body>
-
-<main>
-  <h1>Cafeteria Tracker</h1>
-  <div id="clock">--:--:--</div>
-  <div id="silent-controls">
-    <button class="silent-btn" onclick="triggerSilentLunch(60)">🔇 1 Min Silent Lunch</button>
-    <button class="silent-btn" onclick="triggerSilentLunch(120)">🔇 2 Min Silent Lunch</button>
-    <button class="silent-btn" onclick="triggerSilentLunch(300)">🔇 5 Min Silent Lunch</button>
-  </div>
-  <div id="silent-message">🤫 Silent Lunch – <span id="silent-timer">60</span> seconds remaining...</div>
-  <div id="classes"></div>
-  <audio id="shush-sound" src="https://www.soundjay.com/button/sounds/button-16.mp3" preload="auto"></audio>
-</main>
-
-<aside>
-  <h2>PBIS Matrix</h2>
-  <div class="matrix-item"><strong>B</strong> - Behave responsibly</div>
-  <div class="matrix-item"><strong>E</strong> - Expect to Learn</div>
-  <div class="matrix-item"><strong>S</strong> - Stay Safe</div>
-  <div class="matrix-item"><strong>T</strong> - Treat others with Kindness and Respect</div>
-</aside>
-
-</body>
-</html>
