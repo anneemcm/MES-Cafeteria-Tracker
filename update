@@ -393,3 +393,9 @@ setInterval(updateClock, 1000);
 </script>
 </body>
 </html>
+
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+</body>
+</html>
