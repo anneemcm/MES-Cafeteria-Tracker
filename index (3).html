@@ -1,1 +1,297 @@
-<!-- Final index.html with full lunch schedule, streaks, and badges. Ready for download. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cafeteria Lunch Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Comic Neue', cursive;
+      background-color: #f0f4f8;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .school-banner {
+      background: #115091;
+      color: #fcdb04;
+      padding: 1rem;
+      width: 100%;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    .pbis-line {
+      font-size: 1rem;
+      padding: 0.5rem;
+      background: #fff;
+      width: 100%;
+      text-align: center;
+      border-bottom: 2px solid #ccc;
+    }
+    #clock {
+      font-size: 1.5rem;
+      margin: 1rem 0;
+    }
+    .soundboard {
+      margin: 1rem 0;
+    }
+    .sound-btn {
+      margin: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      background: #fcdb04;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #silent-message {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.85);
+      border: 5px dashed red;
+      box-shadow: 0 0 30px red;
+      z-index: 1000;
+      font-size: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: flash 1s infinite;
+    }
+    @keyframes flash {
+      0%, 100% { border-color: red; box-shadow: 0 0 30px red; }
+      50% { border-color: transparent; box-shadow: none; }
+    }
+    #classes {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1rem;
+      max-width: 100%;
+    }
+    .class-box {
+      width: 180px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      padding: 0.75rem;
+      background-color: white;
+      text-align: left;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+      transition: background-color 0.3s ease;
+      position: relative;
+    }
+    .green-bg { background-color: #d1fae5; }
+    .yellow-bg { background-color: #fef9c3; }
+    .red-bg { background-color: #fee2e2; }
+    .inactive { opacity: 0.6; }
+    .behavior-buttons {
+      margin-top: 0.5rem;
+    }
+    .behavior-btn {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin: 0 4px;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+    .green { background: #22c55e; }
+    .yellow { background: #eab308; }
+    .red { background: #ef4444; }
+    .selected { border-color: #000; }
+    .badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: #fcdb04;
+      color: #000;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.4rem;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="school-banner">🐎 MES Mustangs</div>
+  <div class="pbis-line">
+    PBIS Expectations: B - Behave responsibly | E - Expect to Learn | S - Stay Safe | T - Treat others with Kindness and Respect
+  </div>
+
+  <div id="clock">--:--:--</div>
+
+  <div class="soundboard">
+    <button class="sound-btn" onclick="playSound('shhh')">🤫 Shhh</button>
+    <button class="sound-btn" onclick="playSound('clap')">👏 Clap</button>
+    <button class="sound-btn" onclick="playSound('doorbell')">🔔 Doorbell</button>
+    <button class="sound-btn" onclick="triggerSilentLunch(60)">🔇 Silent Lunch</button>
+  </div>
+
+  <div id="silent-message">🤫 Silent Lunch in Progress</div>
+
+  <div id="classes"></div>
+
+  <audio id="shhh-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_33c74c79d5.mp3?filename=shh-14410.mp3" preload="auto"></audio>
+  <audio id="clap-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_d9e5e8d361.mp3?filename=applause-14412.mp3" preload="auto"></audio>
+  <audio id="doorbell-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4565faeb62.mp3?filename=doorbell-1-174276.mp3" preload="auto"></audio>
+  <script>
+    const lunchSchedule = [
+      { name: "Ms. Reece", start: "10:05", end: "10:35", table: "Table 1" },
+      { name: "Ms. Governale", start: "10:08", end: "10:38", table: "Table 2" },
+      { name: "Ms. Gramby", start: "10:11", end: "10:41", table: "Table 3" },
+      { name: "Ms. Jones", start: "10:14", end: "10:44", table: "Table 4" },
+      { name: "Ms. Brock", start: "10:17", end: "10:47", table: "Table 5" },
+      { name: "Ms. Mayer", start: "10:20", end: "10:50", table: "Table 6" },
+      { name: "Ms. Smith-PreK", start: "10:23", end: "10:53", table: "Pre K Table" },
+      { name: "Ms. Barisaac", start: "10:35", end: "11:05", table: "Table 1" },
+      { name: "Ms. Kitchens", start: "10:38", end: "11:08", table: "Table 2" },
+      { name: "Ms. Calheiros", start: "10:41", end: "11:11", table: "Table 3" },
+      { name: "Ms. Short", start: "10:44", end: "11:14", table: "Table 4" },
+      { name: "Ms. Williams", start: "10:47", end: "11:17", table: "Table 5" },
+      { name: "Ms. Dane-PreK", start: "10:53", end: "11:23", table: "Pre K Table" },
+      { name: "Ms. Carter", start: "11:05", end: "11:35", table: "Table 1" },
+      { name: "Ms. Brown", start: "11:08", end: "11:38", table: "Table 2" },
+      { name: "Ms. Nichelson", start: "11:11", end: "11:41", table: "Table 3" },
+      { name: "Ms. Pilger", start: "11:14", end: "11:44", table: "Table 4" },
+      { name: "Ms. Abramowitz", start: "11:17", end: "11:47", table: "Table 5" },
+      { name: "Mr. Cordy", start: "11:32", end: "12:02", table: "Table 6" },
+      { name: "Ms. DeYonker", start: "11:35", end: "12:05", table: "Table 1" },
+      { name: "Ms. Pitts", start: "11:38", end: "12:08", table: "Table 2" },
+      { name: "Ms. St. Hill-Des Anges", start: "11:41", end: "12:11", table: "Table 3" },
+      { name: "Ms. Riley", start: "11:44", end: "12:44", table: "Table 4" },
+      { name: "Ms. Hussain", start: "11:58", end: "12:28", table: "Table 5" },
+      { name: "Ms. McCrery", start: "12:02", end: "12:32", table: "Table 6" },
+      { name: "Ms. Sakha", start: "12:05", end: "12:35", table: "Table 1" },
+      { name: "Ms. Hudson", start: "12:08", end: "12:38", table: "Table 2" },
+      { name: "Mr. Bemiss", start: "12:11", end: "12:41", table: "Table 3" },
+      { name: "Ms. Johnson", start: "12:14", end: "12:44", table: "Table 4" }
+    ];
+
+    const behaviorStatus = {};
+    const classStreaks = {};
+    const notifiedLineups = {};
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      renderClasses(now);
+    }
+
+    function renderClasses(now) {
+      const container = document.getElementById('classes');
+      container.innerHTML = '';
+      lunchSchedule.forEach(cls => {
+        const start = parseTime(cls.start);
+        const end = parseTime(cls.end);
+        const lineUp = new Date(end.getTime() - 3 * 60000);
+        const isActive = now >= start && now <= end;
+        const behavior = behaviorStatus[cls.name] || 'green';
+
+        if (!classStreaks[cls.name]) {
+          classStreaks[cls.name] = { streak: 0, changed: false };
+        }
+
+        const box = document.createElement('div');
+        box.className = `class-box ${isActive ? behavior + '-bg' : 'inactive'}`;
+
+        let badge = '';
+        const streak = classStreaks[cls.name].streak;
+        if ([5, 10, 15, 20, 25, 30].includes(streak)) {
+          badge = `<div class="badge">🏅 ${streak} Days</div>`;
+        }
+
+        if (isActive) {
+          const minsLeft = Math.ceil((lineUp - now) / 60000);
+          const status = now >= lineUp ? '🚶 Line Up!' : `⏳ ${minsLeft} min left`;
+          if (now >= lineUp && !notifiedLineups[cls.name]) {
+            playSound('doorbell');
+            notifiedLineups[cls.name] = true;
+          }
+
+          box.innerHTML = `
+            ${badge}
+            <h3>${cls.name}</h3>
+            <p><strong>Lunch:</strong> ${cls.start} – ${cls.end}</p>
+            <p><strong>Table:</strong> ${cls.table}</p>
+            <p><strong>Status:</strong> ${status}</p>
+            <div class="behavior-buttons">
+              <div class="behavior-btn green ${behavior === 'green' ? 'selected' : ''}" onclick="setBehavior('${cls.name}', 'green')"></div>
+              <div class="behavior-btn yellow ${behavior === 'yellow' ? 'selected' : ''}" onclick="setBehavior('${cls.name}', 'yellow')"></div>
+              <div class="behavior-btn red ${behavior === 'red' ? 'selected' : ''}" onclick="setBehavior('${cls.name}', 'red')"></div>
+            </div>
+            <p><strong>Green Streak:</strong> ${streak}</p>
+          `;
+        } else {
+          if (!classStreaks[cls.name].changed) {
+            classStreaks[cls.name].streak += 1;
+          } else {
+            classStreaks[cls.name].streak = 0;
+          }
+          classStreaks[cls.name].changed = false;
+          box.innerHTML = `
+            ${badge}
+            <h3>${cls.name}</h3>
+            <p><strong>Lunch:</strong> ${cls.start} – ${cls.end}</p>
+            <p><strong>Table:</strong> ${cls.table}</p>
+            <p><strong>Status:</strong> Not in cafeteria</p>
+            <p><strong>Green Streak:</strong> ${classStreaks[cls.name].streak}</p>
+          `;
+          notifiedLineups[cls.name] = false;
+        }
+
+        container.appendChild(box);
+      });
+    }
+
+    function parseTime(str) {
+      const [h, m] = str.split(':').map(Number);
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
+    }
+
+    function playSound(type) {
+      const audioMap = {
+        shhh: document.getElementById('shhh-sound'),
+        clap: document.getElementById('clap-sound'),
+        doorbell: document.getElementById('doorbell-sound')
+      };
+      if (audioMap[type]) {
+        audioMap[type].currentTime = 0;
+        audioMap[type].play();
+      }
+    }
+
+    function triggerSilentLunch(seconds) {
+      const overlay = document.getElementById('silent-message');
+      overlay.style.display = 'flex';
+      playSound('shhh');
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, seconds * 1000);
+    }
+
+    function setBehavior(name, color) {
+      behaviorStatus[name] = color;
+      if (color !== 'green') {
+        classStreaks[name].changed = true;
+      }
+      updateClock();
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
