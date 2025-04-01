@@ -5,6 +5,35 @@
   <title>Cafeteria Live Lunch Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Comic+Neue&display=swap" rel="stylesheet">
   <style>
+    #left-panel {
+      width: 60px;
+      background: #ffffff;
+      border-right: 3px solid #ccc;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+      padding: 1rem 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: width 0.3s ease;
+    }
+    #left-panel.collapsed {
+      width: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    .sound-toggle {
+      background: #115091;
+      color: #fcdb04;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+    #soundboard h2 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
     body {
       font-family: 'Comic Neue', cursive;
       background-color: #f0f4f8;
@@ -75,9 +104,82 @@
       border-radius: 8px;
       cursor: pointer;
     }
-  </style>
+      .class-box {
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 300px;
+      box-sizing: border-box;
+      text-align: left;
+      box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
+      position: relative;
+      transition: background 0.5s ease;
+      margin: 1rem auto;
+    }
+    .class-box.inactive {
+      background-color: white !important;
+      color: #888;
+    }
+    .green-bg { background-color: #d1fae5; }
+    .yellow-bg { background-color: #fef9c3; }
+    .red-bg { background-color: #fee2e2; }
+    .status {
+      font-weight: bold;
+      font-size: 1.3rem;
+      margin-top: 1rem;
+    }
+    .progress-bar {
+      height: 20px;
+      background: #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #3b82f6;
+      width: 0%;
+      transition: width 1s linear;
+    }
+    .behavior-buttons {
+      margin-top: 1rem;
+    }
+    .behavior-btn {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin: 0 5px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    .green { background: #22c55e; }
+    .yellow { background: #eab308; }
+    .red { background: #ef4444; }
+    .selected { border-color: #000; }
+    .badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #fcdb04;
+      color: #000;
+      padding: 0.3rem 0.5rem;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+</style>
 </head>
 <body>
+  <div id="left-panel">
+    <button class="sound-toggle" onclick="toggleSoundboard()">🔊</button>
+    <div id="soundboard">
+      <h2>Sounds</h2>
+      <button class="sound-btn" onclick="playSound('shhh')">🤫</button>
+      <button class="sound-btn" onclick="playSound('clap')">👏</button>
+      <button class="sound-btn" onclick="playSound('doorbell')">🔔</button>
+    </div>
+  </div>
   <main>
     <div class="school-banner">
       <span class="mascot">🐎</span> MES Mustangs
@@ -120,6 +222,10 @@
   </aside>
 
   <script>
+    function toggleSoundboard() {
+      const panel = document.getElementById('left-panel');
+      panel.classList.toggle('collapsed');
+    }
     function toggleMatrix() {
       document.getElementById('matrix-section').classList.toggle('show');
     }
